@@ -41,9 +41,8 @@
  * allocate memory for their hash table,
  * in memory stack (0:default, fastest), or in memory heap (1:requires malloc()).
  */
-#ifndef LZ4_HEAPMODE
-#  define LZ4_HEAPMODE 0
-#endif
+#undef LZ4_HEAPMODE
+#define LZ4_HEAPMODE 1
 
 /*
  * LZ4_ACCELERATION_DEFAULT :
