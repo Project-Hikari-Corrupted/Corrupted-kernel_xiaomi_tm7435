@@ -98,48 +98,46 @@ static int __init proc_boot_config_init(void)
 
 #if defined(CONFIG_BOOTCONFIG_HWC_IS_PRODUCT_SKU)
 		hwc_line = strstr(saved_boot_config, HWC_KEY);
-		if (!hwc_line)
-			goto skip;
-
-		hwc_quote_start = strchr(hwc_line, '"');
-		if (!hwc_quote_start)
-			goto skip;
-		hwc_quote_start++;
-		hwc_quote_end = strchr(hwc_quote_start, '"');
-		if (!hwc_quote_end || hwc_quote_end <= hwc_quote_start)
-			goto skip;
-
-		hwc_len = hwc_quote_end - hwc_quote_start;
-		if (hwc_len >= sizeof(hwc_value))
-			hwc_len = sizeof(hwc_value) - 1;
-		strncpy(hwc_value, hwc_quote_start, hwc_len);
-		hwc_value[hwc_len] = '\0';
-		if (!hwc_value[0])
-			goto skip;
-
 		sku_line = strstr(saved_boot_config, SKU_KEY);
-		if (!sku_line)
-			goto skip;
 
-		sku_quote_start = strchr(sku_line, '"');
-		if (!sku_quote_start)
-			goto skip;
-		sku_quote_start++;
-		sku_quote_end = strchr(sku_quote_start, '"');
-		if (!sku_quote_end || sku_quote_end <= sku_quote_start)
-			goto skip;
+		if (hwc_line && sku_line) {
+			hwc_quote_start = strchr(hwc_line, '"');
+			sku_quote_start = strchr(sku_line, '"');
 
-		sku_old_len = sku_quote_end - sku_quote_start;
-		sku_new_len = strlen(hwc_value);
-		if (sku_new_len <= sku_old_len) {
-			memmove(sku_quote_start + sku_new_len, sku_quote_end,
-				strlen(sku_quote_end) + 1);
-			memcpy(sku_quote_start, hwc_value, sku_new_len);
-		} else {
-			memcpy(sku_quote_start, hwc_value, sku_old_len);
+			if (hwc_quote_start && sku_quote_start) {
+				hwc_quote_start++;
+				sku_quote_start++;
+
+				hwc_quote_end = strchr(hwc_quote_start, '"');
+				sku_quote_end = strchr(sku_quote_start, '"');
+
+				if (hwc_quote_end && sku_quote_end &&
+				    hwc_quote_end > hwc_quote_start &&
+				    sku_quote_end > sku_quote_start) {
+
+					hwc_len = hwc_quote_end - hwc_quote_start;
+					if (hwc_len >= sizeof(hwc_value))
+						hwc_len = sizeof(hwc_value) - 1;
+
+					strncpy(hwc_value, hwc_quote_start, hwc_len);
+					hwc_value[hwc_len] = '\0';
+
+					if (hwc_value[0]) {
+						sku_old_len = sku_quote_end - sku_quote_start;
+						sku_new_len = strlen(hwc_value);
+
+						if (sku_new_len <= sku_old_len) {
+							memmove(sku_quote_start + sku_new_len, sku_quote_end,
+								strlen(sku_quote_end) + 1);
+							memcpy(sku_quote_start, hwc_value, sku_new_len);
+						} else {
+							memcpy(sku_quote_start, hwc_value, sku_old_len);
+						}
+					}
+				}
+			}
 		}
 #endif
-	skip;
 	}
 
 	proc_create_single("bootconfig", 0, NULL, boot_config_proc_show);
