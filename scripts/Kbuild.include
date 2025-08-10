@@ -66,7 +66,7 @@ define filechk
 		mv -f $(dot-target).tmp $@;			\
 	fi
 endef
-
+ 
 ###
 # Shorthand for $(Q)$(MAKE) -f scripts/Makefile.build obj=
 # Usage:
